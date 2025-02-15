@@ -20,12 +20,22 @@ class FetchAgent:
         return self.base_production * weather_factor + random.uniform(-0.1, 0.1) * self.base_production
 
     def interact_with_grid(self, energy):
-        # Placeholder for grid interaction logic (CT burning/earning)
         pass
 
     def update_state(self):
-        # Logic for updating the agent's state based on interactions
         pass
 
     def __str__(self):
         return f"FetchAgent(name={self.name}, energy_consumption={self.base_consumption}, energy_production={self.base_production}, ct_balance={self.ct_balance})"
+
+class Consumer(FetchAgent):
+    def __init__(self, id, base_consumption):
+        super().__init__(id, base_consumption)
+
+class Prosumer(FetchAgent):
+    def __init__(self, id, base_consumption, base_production):
+        super().__init__(id, base_consumption, base_production)
+
+class Producer(FetchAgent):
+    def __init__(self, id, base_production):
+        super().__init__(id, base_production=base_production)
