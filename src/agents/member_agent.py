@@ -18,7 +18,7 @@ class MemberAgent:
 
     def interact_with_grid(self, energy):
         # Placeholder for grid interaction logic (CT burning/earning)
-        pass
+        pass 
 
     def interact_with_community(self, community):
         # Logic for interacting with the community
