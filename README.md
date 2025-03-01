@@ -35,12 +35,17 @@ fetchai-agent-simulation
    cd fetchai-agent-simulation
    ```
 
-2. Install the required dependencies:
+2. create or load venv in python
+   ```
+   source venv/bin/activate
+
+
+3. Install the required dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-3. add src to PYTHONPATH
+4. add src to PYTHONPATH
    ```
    export PYTHONPATH=$PYTHONPATH:$(pwd)/src
    ```

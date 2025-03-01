@@ -1,5 +1,5 @@
 import random
-from models.cooperative import Cooperative
+from src.models.cooperative import Cooperative
 
 # --- Przykładowa konfiguracja i uruchomienie symulacji ---
 
