@@ -38,7 +38,7 @@ if __name__ == "__main__":
     cooperative = Cooperative(config, initial_token_balance=100)
     
     # Załaduj dane z katalogu pv_profiles
-    profiles_directory = "pv_profiles"
+    profiles_directory = "pv_profiles_1_days"
     profiles = load_profiles(profiles_directory)
     
     # Ustal liczbę iteracji na podstawie liczby godzin w plikach
@@ -49,14 +49,11 @@ if __name__ == "__main__":
     time_labels = []
     ppe_labels = []
     for hour in range(steps):
-        hour_data = {'hour': hour, 'consumption': 0, 'production': 0}
         for ppe, profile in profiles.items():
-            hour_data['consumption'] += profile.iloc[hour]['consumption']
-            hour_data['production'] += profile.iloc[hour]['production']
-            if len(time_labels) < steps:
-                time_labels.append(profile.iloc[hour]['hour'])
-                ppe_labels.append(ppe)
-        hourly_data.append(hour_data)
+            hour_data = {'hour': profile.iloc[hour]['hour'], 'consumption': profile.iloc[hour]['consumption'], 'production': profile.iloc[hour]['production']}
+            time_labels.append(profile.iloc[hour]['hour'])
+            ppe_labels.append(ppe)
+            hourly_data.append(hour_data)
     
     p2p_base_price = 0.5
     grid_price = 1.0
@@ -64,7 +61,7 @@ if __name__ == "__main__":
     token_mint_rate = 0.1
     token_burn_rate = 0.1
     
-    cooperative.simulate(steps, p2p_base_price, grid_price, min_price, token_mint_rate, token_burn_rate, hourly_data)
+    cooperative.simulate(len(hourly_data), p2p_base_price, grid_price, min_price, token_mint_rate, token_burn_rate, hourly_data)
     
     # Zapisz dane wynikowe do plików CSV
     save_results_to_csv(cooperative, time_labels, ppe_labels)
@@ -117,4 +114,4 @@ if __name__ == "__main__":
     # Przypisanie zmodyfikowanej metody do obiektu cooperative
     cooperative.plot_results = plot_results.__get__(cooperative)
     
-    cooperative.plot_results(steps, labels)
+    cooperative.plot_results(len(hourly_data), labels)
