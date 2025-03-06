@@ -1,6 +1,5 @@
-from src.models.storage import Storage
-
 from .storage import Storage
+
 
 class Cooperative:
     def __init__(self, config, initial_token_balance):
