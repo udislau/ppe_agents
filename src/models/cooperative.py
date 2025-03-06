@@ -28,14 +28,17 @@ class Cooperative:
 
         # Update storage level
         energy_surplus = 0
+        minted_tokens = 0
         if net_energy > 0:
             if self.storage:
                 net_energy -= self.storage.charge(net_energy)
             if net_energy > 0:
                 energy_surplus = net_energy
-                self.community_token_balance += net_energy * grid_price
-                minted_tokens = net_energy * token_mint_rate
-                self.community_token_balance += minted_tokens
+                if self.storage and self.storage.current_level >= net_energy:
+                    self.storage.discharge(net_energy)
+                    minted_tokens = net_energy * token_mint_rate
+                    self.community_token_balance += minted_tokens
+
         elif net_energy < 0:
             if self.storage:
                 net_energy += self.storage.discharge(-net_energy)
@@ -62,7 +65,7 @@ class Cooperative:
         log_entry += f"Łączne zużycie: {consumption:.2f} kWh\n"
         log_entry += f"Łączna produkcja: {production:.2f} kWh\n"
         log_entry += f"Handlowana energia (OZE): {max(0, production - consumption):.2f} kWh, średnia cena: {p2p_base_price:.2f} PLN/kWh\n"
-        log_entry += f"Tokeny mintowane w tym kroku: {max(0, production - consumption) * token_mint_rate:.2f}\n"
+        log_entry += f"Tokeny mintowane w tym kroku: {minted_tokens:.2f}\n"
         log_entry += f"Niedobór energii: {energy_deficit:.2f} kWh, zakupione z gridu po {grid_price:.2f} PLN/kWh (koszt: {energy_deficit * grid_price:.2f} PLN)\n"
         log_entry += f"Tokeny spalane z powodu gridu: {burned_tokens:.2f}\n"
         log_entry += f"Stan magazynu po interwencji: {self.storage.current_level if self.storage else 0:.2f} kWh\n"
