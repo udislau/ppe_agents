@@ -1,6 +1,7 @@
 from src.models.cooperative import Cooperative
 from src.utils.helper_functions import plot_results, save_results_to_csv, load_profiles, load_storages
 import sys
+from datetime import datetime
 
 
 if __name__ == "__main__":
@@ -11,6 +12,10 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("No required parameter: profiles directory path")
         sys.exit(1)
+    if len(sys.argv) < 3:
+        print("No required parameter: logs directory path")
+        sys.exit(1)
+    
     
     
     storages = load_storages(sys.argv[1])
@@ -51,7 +56,9 @@ if __name__ == "__main__":
     save_results_to_csv(cooperative, time_labels)
     
     # Zapisz logi do pliku tekstowego
-    cooperative.save_logs('simulation_logs.txt')
+    now = datetime.now()
+    formatted_date = now.strftime("%Y-%m-%d_%H:%M:%S")
+    cooperative.save_logs(sys.argv[3] +'/simulation_' + formatted_date + '.log')
     
     # Generowanie etykiet dla osi X
     labels = time_labels
