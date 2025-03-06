@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from src.models.cooperative import Cooperative
+from src.models.storage import Storage
 
 def load_profiles(directory):
     profiles = {}
@@ -14,21 +15,20 @@ def load_profiles(directory):
             profiles[ppe] = df
     return profiles
 
-def save_results_to_csv(cooperative, time_labels, ppe_labels):
+def save_results_to_csv(cooperative, time_labels):
     data = {
         'Time': time_labels,
-        'PPE': ppe_labels,
         'Total Consumption': cooperative.history_consumption,
         'Total Production': cooperative.history_production,
         'Token Balance': cooperative.history_token_balance,
         'P2P Price': cooperative.history_p2p_price,
         'Grid Price': cooperative.history_grid_price,
-        'Storage Level': cooperative.history_storage
+        'Storage Level': cooperative.history_storage,
+        'Energy Deficit': cooperative.history_energy_deficit,
+        'Energy Surplus': cooperative.history_energy_surplus
     }
     df = pd.DataFrame(data)
     df.to_csv('simulation_results.csv', index=False)
-
-# --- Przykładowa konfiguracja i uruchomienie symulacji ---
 
 if __name__ == "__main__":
     config = {
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     cooperative = Cooperative(config, initial_token_balance=100)
     
     # Załaduj dane z katalogu pv_profiles
-    profiles_directory = "pv_profiles_1_days"
+    profiles_directory = "pv_profiles_2_days"
     profiles = load_profiles(profiles_directory)
     
     # Ustal liczbę iteracji na podstawie liczby godzin w plikach
@@ -47,13 +47,14 @@ if __name__ == "__main__":
     # Przygotuj dane godzinowe na podstawie załadowanych profili
     hourly_data = []
     time_labels = []
-    ppe_labels = []
     for hour in range(steps):
+        total_consumption = 0
+        total_production = 0
         for ppe, profile in profiles.items():
-            hour_data = {'hour': profile.iloc[hour]['hour'], 'consumption': profile.iloc[hour]['consumption'], 'production': profile.iloc[hour]['production']}
-            time_labels.append(profile.iloc[hour]['hour'])
-            ppe_labels.append(ppe)
-            hourly_data.append(hour_data)
+            total_consumption += profile.iloc[hour]['consumption']
+            total_production += profile.iloc[hour]['production']
+        time_labels.append(profile.iloc[hour]['hour'])
+        hourly_data.append({'hour': hour, 'consumption': total_consumption, 'production': total_production})
     
     p2p_base_price = 0.5
     grid_price = 1.0
@@ -64,14 +65,17 @@ if __name__ == "__main__":
     cooperative.simulate(len(hourly_data), p2p_base_price, grid_price, min_price, token_mint_rate, token_burn_rate, hourly_data)
     
     # Zapisz dane wynikowe do plików CSV
-    save_results_to_csv(cooperative, time_labels, ppe_labels)
+    save_results_to_csv(cooperative, time_labels)
+    
+    # Zapisz logi do pliku tekstowego
+    cooperative.save_logs('simulation_logs.txt')
     
     # Generowanie etykiet dla osi X
     labels = time_labels
     
     # Modyfikacja metody plot_results, aby używała nowych etykiet i zapisywała wykres do pliku
     def plot_results(self, steps, labels):
-        fig, ax = plt.subplots(4, 1, figsize=(15, 15))
+        fig, ax = plt.subplots(6, 1, figsize=(15, 15))
         
         ax[0].plot(range(steps), self.history_consumption, label='Total Consumption')
         ax[0].plot(range(steps), self.history_production, label='Total Production')
@@ -106,6 +110,22 @@ if __name__ == "__main__":
         ax[3].legend()
         ax[3].set_xticks(range(steps))
         ax[3].set_xticklabels(labels, rotation=90)
+        
+        ax[4].plot(range(steps), self.history_energy_deficit, label='Energy Deficit')
+        ax[4].set_title('Energy Deficit Over Time')
+        ax[4].set_xlabel('Time')
+        ax[4].set_ylabel('Energy (kWh)')
+        ax[4].legend()
+        ax[4].set_xticks(range(steps))
+        ax[4].set_xticklabels(labels, rotation=90)
+        
+        ax[5].plot(range(steps), self.history_energy_surplus, label='Energy Surplus')
+        ax[5].set_title('Energy Surplus Over Time')
+        ax[5].set_xlabel('Time')
+        ax[5].set_ylabel('Energy (kWh)')
+        ax[5].legend()
+        ax[5].set_xticks(range(steps))
+        ax[5].set_xticklabels(labels, rotation=90)
         
         plt.tight_layout()
         plt.savefig('results.png')  # Zapisz wykres do pliku
