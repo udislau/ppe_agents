@@ -12,6 +12,13 @@ def load_profiles(directory):
             profiles[ppe] = df
     return profiles
 
+def load_storages(filepath):
+    storages = []
+    df = pd.read_csv(filepath)
+    for _, row in df.iterrows():
+        storages.append({'id': row['id'], 'capacity': row['capacity']})
+    return storages
+
 def save_results_to_csv(cooperative, time_labels):
     data = {
         'Time': time_labels,
@@ -20,18 +27,20 @@ def save_results_to_csv(cooperative, time_labels):
         'Token Balance': cooperative.history_token_balance,
         'P2P Price': cooperative.history_p2p_price,
         'Grid Price': cooperative.history_grid_price,
-        'Storage Level': cooperative.history_storage,
         'Energy Deficit': cooperative.history_energy_deficit,
         'Energy Surplus': cooperative.history_energy_surplus
     }
+    
+    # Add storage levels to the data dictionary
+    for storage_name, storage_levels in cooperative.history_storage.items():
+        data[f'Storage Level {storage_name}'] = storage_levels
+    
     df = pd.DataFrame(data)
     df.to_csv('simulation_results.csv', index=False)
 
-
-# Modyfikacja metody plot_results, aby używała nowych etykiet i zapisywała wykres do pliku
 def plot_results(self, steps, labels):
-    fig, ax = plt.subplots(6, 1, figsize=(15, 15))
-
+    fig, ax = plt.subplots(6, 1, figsize=(15, 30))
+    
     ax[0].plot(range(steps), self.history_consumption, label='Total Consumption')
     ax[0].plot(range(steps), self.history_production, label='Total Production')
     ax[0].set_title('Energy Consumption and Production')
@@ -40,7 +49,7 @@ def plot_results(self, steps, labels):
     ax[0].legend()
     ax[0].set_xticks(range(steps))
     ax[0].set_xticklabels(labels, rotation=90)
-
+    
     ax[1].plot(range(steps), self.history_token_balance, label='Token Balance')
     ax[1].set_title('Token Balance Over Time')
     ax[1].set_xlabel('Time')
@@ -48,7 +57,7 @@ def plot_results(self, steps, labels):
     ax[1].legend()
     ax[1].set_xticks(range(steps))
     ax[1].set_xticklabels(labels, rotation=90)
-
+    
     ax[2].plot(range(steps), self.history_p2p_price, label='P2P Price')
     ax[2].plot(range(steps), self.history_grid_price, label='Grid Price')
     ax[2].set_title('Energy Prices Over Time')
@@ -57,15 +66,16 @@ def plot_results(self, steps, labels):
     ax[2].legend()
     ax[2].set_xticks(range(steps))
     ax[2].set_xticklabels(labels, rotation=90)
-
-    ax[3].plot(range(steps), self.history_storage, label='Storage Level')
-    ax[3].set_title('Storage Level Over Time')
+    
+    for storage_name, storage_levels in self.history_storage.items():
+        ax[3].plot(range(steps), storage_levels, label=f'Storage Level {storage_name}')
+    ax[3].set_title('Storage Levels Over Time')
     ax[3].set_xlabel('Time')
     ax[3].set_ylabel('Energy (kWh)')
     ax[3].legend()
     ax[3].set_xticks(range(steps))
     ax[3].set_xticklabels(labels, rotation=90)
-
+    
     ax[4].plot(range(steps), self.history_energy_deficit, label='Energy Deficit')
     ax[4].set_title('Energy Deficit Over Time')
     ax[4].set_xlabel('Time')
@@ -73,7 +83,7 @@ def plot_results(self, steps, labels):
     ax[4].legend()
     ax[4].set_xticks(range(steps))
     ax[4].set_xticklabels(labels, rotation=90)
-
+    
     ax[5].plot(range(steps), self.history_energy_surplus, label='Energy Surplus')
     ax[5].set_title('Energy Surplus Over Time')
     ax[5].set_xlabel('Time')
@@ -81,7 +91,7 @@ def plot_results(self, steps, labels):
     ax[5].legend()
     ax[5].set_xticks(range(steps))
     ax[5].set_xticklabels(labels, rotation=90)
-
+    
     plt.tight_layout()
     plt.savefig('results.png')  # Zapisz wykres do pliku
     plt.show()

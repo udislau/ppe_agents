@@ -3,17 +3,17 @@ from .storage import Storage
 
 class Cooperative:
     def __init__(self, config, initial_token_balance):
-        self.storage = Storage(**config['storage']) if 'storage' in config else None
+        self.storages = [Storage(**storage_config) for storage_config in config.get('storages', [])]
         self.token_balances = {'community': initial_token_balance}
-        if self.storage:
-            self.token_balances[self.storage.name] = initial_token_balance
+        for storage in self.storages:
+            self.token_balances[storage.name] = initial_token_balance
         self.community_token_balance = initial_token_balance
         self.history_consumption = []
         self.history_production = []
         self.history_token_balance = []
         self.history_p2p_price = []
         self.history_grid_price = []
-        self.history_storage = []
+        self.history_storage = {storage.name: [] for storage in self.storages}
         self.history_energy_deficit = []
         self.history_energy_surplus = []
         self.logs = []
@@ -30,18 +30,24 @@ class Cooperative:
         energy_surplus = 0
         minted_tokens = 0
         if net_energy > 0:
-            if self.storage:
-                net_energy -= self.storage.charge(net_energy)
+            for storage in self.storages:
+                net_energy -= storage.charge(net_energy)
+                if net_energy <= 0:
+                    break
             if net_energy > 0:
                 energy_surplus = net_energy
-                if self.storage and self.storage.current_level >= net_energy:
-                    self.storage.discharge(net_energy)
-                    minted_tokens = net_energy * token_mint_rate
-                    self.community_token_balance += minted_tokens
+                for storage in self.storages:
+                    if storage.current_level >= net_energy:
+                        storage.discharge(net_energy)
+                        minted_tokens = net_energy * token_mint_rate
+                        self.community_token_balance += minted_tokens
+                        break
 
         elif net_energy < 0:
-            if self.storage:
-                net_energy += self.storage.discharge(-net_energy)
+            for storage in self.storages:
+                net_energy += storage.discharge(-net_energy)
+                if net_energy >= 0:
+                    break
 
         # If there is still a deficit, buy from the grid
         energy_deficit = 0
@@ -68,7 +74,8 @@ class Cooperative:
         log_entry += f"Tokeny mintowane w tym kroku: {minted_tokens:.2f}\n"
         log_entry += f"Niedobór energii: {energy_deficit:.2f} kWh, zakupione z gridu po {grid_price:.2f} PLN/kWh (koszt: {energy_deficit * grid_price:.2f} PLN)\n"
         log_entry += f"Tokeny spalane z powodu gridu: {burned_tokens:.2f}\n"
-        log_entry += f"Stan magazynu po interwencji: {self.storage.current_level if self.storage else 0:.2f} kWh\n"
+        for storage in self.storages:
+            log_entry += f"Stan magazynu {storage.name} po interwencji: {storage.current_level:.2f} kWh\n"
         log_entry += f"Saldo tokenów: {self.community_token_balance:.2f} CT\n"
         self.logs.append(log_entry)
 
@@ -78,7 +85,8 @@ class Cooperative:
         self.history_token_balance.append(self.community_token_balance)
         self.history_p2p_price.append(p2p_base_price)
         self.history_grid_price.append(grid_price)
-        self.history_storage.append(self.storage.current_level if self.storage else 0)
+        for storage in self.storages:
+            self.history_storage[storage.name].append(storage.current_level)
         self.history_energy_deficit.append(energy_deficit)
         self.history_energy_surplus.append(energy_surplus)
 

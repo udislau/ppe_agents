@@ -1,17 +1,28 @@
 from src.models.cooperative import Cooperative
-from src.utils.helper_functions import plot_results, save_results_to_csv, load_profiles
+from src.utils.helper_functions import plot_results, save_results_to_csv, load_profiles, load_storages
+import sys
 
 
 if __name__ == "__main__":
+
+    if len(sys.argv) < 1:
+        print("No required parameter: storage file path")
+        sys.exit(1)
+    if len(sys.argv) < 2:
+        print("No required parameter: profiles directory path")
+        sys.exit(1)
+    
+    
+    storages = load_storages(sys.argv[1])
+    
     config = {
-        'storage': {'id': 'S1', 'capacity': 120}
+        'storages': storages
     }
     
     cooperative = Cooperative(config, initial_token_balance=100)
     
     # Załaduj dane z katalogu pv_profiles
-    profiles_directory = "pv_profiles_2_days"
-    profiles = load_profiles(profiles_directory)
+    profiles = load_profiles(sys.argv[2])
     
     # Ustal liczbę iteracji na podstawie liczby godzin w plikach
     steps = len(next(iter(profiles.values())))

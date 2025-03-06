@@ -54,7 +54,7 @@ fetchai-agent-simulation
 
 To run the simulation, execute the following command:
 ```
-python3 src/simulation/energy_community_simulation.py
+python3 src/simulation/energy_community_simulation.py storages.csv pv_profiles_2_days
 ```
 
 This will initialize the community and agents, run the simulation for a specified number of time steps, and collect data for analysis.
