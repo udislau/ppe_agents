@@ -22,6 +22,7 @@ class Cooperative:
         hourly_data_step = hourly_data[step]
         consumption = hourly_data_step['consumption']
         production = hourly_data_step['production']
+        date = hourly_data_step['date']
 
         # Calculate net energy balance
         net_energy = production - consumption
@@ -67,16 +68,16 @@ class Cooperative:
                 burned_tokens = affordable_energy * token_burn_rate
 
         # Log the negotiation details
-        log_entry = f"=== Negocjacje w bieżącym kroku ===\n"
-        log_entry += f"Łączne zużycie: {consumption:.2f} kWh\n"
-        log_entry += f"Łączna produkcja: {production:.2f} kWh\n"
-        log_entry += f"Handlowana energia (OZE): {max(0, production - consumption):.2f} kWh, średnia cena: {p2p_base_price:.2f} PLN/kWh\n"
-        log_entry += f"Tokeny mintowane w tym kroku: {minted_tokens:.2f}\n"
-        log_entry += f"Niedobór energii: {energy_deficit:.2f} kWh, zakupione z gridu po {grid_price:.2f} PLN/kWh (koszt: {energy_deficit * grid_price:.2f} PLN)\n"
-        log_entry += f"Tokeny spalane z powodu gridu: {burned_tokens:.2f}\n"
+        log_entry = f"=== Current step: {date} ===\n"
+        log_entry += f"Total consumption: {consumption:.2f} kWh\n"
+        log_entry += f"Total production: {production:.2f} kWh\n"
+        log_entry += f"Traded renewable energy: {max(0, production - consumption):.2f} kWh, average price: {p2p_base_price:.2f} PLN/kWh\n"
+        log_entry += f"Tokens minted in this step: {minted_tokens:.2f}\n"
+        log_entry += f"Energy deficit: {energy_deficit:.2f} kWh, purchased from grid at {grid_price:.2f} PLN/kWh (cost: {energy_deficit * grid_price:.2f} PLN)\n"
+        log_entry += f"Tokens burned due to grid: {burned_tokens:.2f}\n"
         for storage in self.storages:
-            log_entry += f"Stan magazynu {storage.name} po interwencji: {storage.current_level:.2f} kWh\n"
-        log_entry += f"Saldo tokenów: {self.community_token_balance:.2f} CT\n"
+            log_entry += f"Storage {storage.name} level after intervention: {storage.current_level:.2f} kWh\n"
+        log_entry += f"Token balance: {self.community_token_balance:.2f} CT\n"
         self.logs.append(log_entry)
 
         # Update history

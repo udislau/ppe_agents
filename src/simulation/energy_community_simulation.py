@@ -41,8 +41,9 @@ if __name__ == "__main__":
         for ppe, profile in profiles.items():
             total_consumption += profile.iloc[hour]['consumption']
             total_production += profile.iloc[hour]['production']
-        time_labels.append(profile.iloc[hour]['hour'])
-        hourly_data.append({'hour': hour, 'consumption': total_consumption, 'production': total_production})
+        date = profile.iloc[hour]['hour']  # Assuming 'hour' column contains date information
+        time_labels.append(date)
+        hourly_data.append({'hour': hour, 'consumption': total_consumption, 'production': total_production, 'date': date})
     
     p2p_base_price = 0.5
     grid_price = 1.0
