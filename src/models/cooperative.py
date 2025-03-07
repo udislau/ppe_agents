@@ -18,13 +18,17 @@ class Cooperative:
         self.history_energy_surplus = []
         self.history_energy_sold_to_grid = []
         self.history_tokens_gained_from_grid = []
+        self.history_purchase_price = []
         self.logs = []
 
-    def simulate_step(self, step, p2p_base_price, grid_price, min_price, token_mint_rate, token_burn_rate, hourly_data):
+    def simulate_step(self, step, p2p_base_price, min_price, token_mint_rate, token_burn_rate, hourly_data, grid_costs):
         hourly_data_step = hourly_data[step]
         consumption = hourly_data_step['consumption']
         production = hourly_data_step['production']
         date = hourly_data_step['date']
+        
+        grid_price = grid_costs[step % len(grid_costs)]['purchase']
+        sale_price = grid_costs[step % len(grid_costs)]['sale']
 
         # Calculate net energy balance
         net_energy = production - consumption
@@ -64,7 +68,7 @@ class Cooperative:
                         break
                 # Sell surplus energy to the grid
                 energy_sold_to_grid = energy_surplus
-                tokens_gained_from_grid = energy_sold_to_grid * grid_price
+                tokens_gained_from_grid = energy_sold_to_grid * sale_price
                 self.community_token_balance += tokens_gained_from_grid
 
         elif net_energy < 0:
@@ -106,8 +110,10 @@ class Cooperative:
         log_entry += f"Energy added to storage: {energy_added_to_storage:.2f} kWh, tokens used: {tokens_used_for_storage:.2f}\n"
         log_entry += f"Energy got from storages: {energy_bought_from_storages:.2f} kWh, cost: {cost_from_storages:.2f} CT\n"
         log_entry += f"Energy bought from grid: {energy_bought_from_grid:.2f} kWh, cost: {cost_from_grid:.2f} CT\n"
-        log_entry += f"Energy sold to grid: {energy_sold_to_grid:.2f} kWh, price: {grid_price:.2f} CT/kWh, tokens gained: {tokens_gained_from_grid:.2f}\n"
+        log_entry += f"Energy sold to grid: {energy_sold_to_grid:.2f} kWh, price: {sale_price:.2f} CT/kWh, tokens gained: {tokens_gained_from_grid:.2f}\n"
         log_entry += f"Tokens burned due to grid: {burned_tokens:.2f}\n"
+        log_entry += f"Purchase grid price for this step: {grid_price:.2f} CT/kWh\n"
+        log_entry += f"Sale grid price for this step: {sale_price:.2f} CT/kWh\n"
         for storage in self.storages:
             log_entry += f"Storage {storage.name} level after intervention: {storage.current_level:.2f} kWh\n"
         log_entry += f"Token balance: {self.community_token_balance:.2f} CT\n"
@@ -118,7 +124,8 @@ class Cooperative:
         self.history_production.append(production)
         self.history_token_balance.append(self.community_token_balance)
         self.history_p2p_price.append(p2p_base_price)
-        self.history_grid_price.append(grid_price)
+        self.history_grid_price.append(sale_price)
+        self.history_purchase_price.append(grid_price)
         for storage in self.storages:
             self.history_storage[storage.name].append(storage.current_level)
         self.history_energy_deficit.append(energy_deficit)

@@ -27,6 +27,7 @@ def save_results_to_csv(cooperative, time_labels):
         'Token Balance': cooperative.history_token_balance,
         'P2P Price': cooperative.history_p2p_price,
         'Grid Price': cooperative.history_grid_price,
+        'Purchase Price': cooperative.history_purchase_price,
         'Energy Deficit': cooperative.history_energy_deficit,
         'Energy Surplus': cooperative.history_energy_surplus
     }
@@ -59,7 +60,9 @@ def plot_results(self, steps, labels):
     ax[1].set_xticklabels(labels, rotation=90)
     
     ax[2].plot(range(steps), self.history_p2p_price, label='P2P Price')
-    ax[2].plot(range(steps), self.history_grid_price, label='Grid Price')
+    ax[2].plot(range(steps), self.history_purchase_price, label='Purchase Grid Price')
+    ax[2].plot(range(steps), self.history_grid_price, label='Sale Grid Price')
+
     ax[2].set_title('Energy Prices Over Time')
     ax[2].set_xlabel('Time')
     ax[2].set_ylabel('Price (Tokens/kWh)')
@@ -93,5 +96,5 @@ def plot_results(self, steps, labels):
     ax[5].set_xticklabels(labels, rotation=90)
     
     plt.tight_layout()
-    plt.savefig('results.png')  # Zapisz wykres do pliku
+    plt.savefig('results.png')  # Save the plot to a file
     plt.show()

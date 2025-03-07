@@ -1,8 +1,20 @@
 from src.models.cooperative import Cooperative
 from src.utils.helper_functions import plot_results, save_results_to_csv, load_profiles, load_storages
 import sys
+import csv
 from datetime import datetime
 
+def load_grid_costs(filepath):
+    grid_costs = []
+    with open(filepath, 'r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            grid_costs.append({
+                'hour': row['Hour'],
+                'purchase': float(row['Purchase'].replace(',', '.')),
+                'sale': float(row['Sale'].replace(',', '.'))
+            })
+    return grid_costs
 
 if __name__ == "__main__":
 
@@ -15,8 +27,9 @@ if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("No required parameter: logs directory path")
         sys.exit(1)
-    
-    
+    if len(sys.argv) < 4:
+        print("No required parameter: grid costs file path")
+        sys.exit(1)
     
     storages = load_storages(sys.argv[1])
     
@@ -26,13 +39,13 @@ if __name__ == "__main__":
     
     cooperative = Cooperative(config, initial_token_balance=100)
     
-    # Załaduj dane z katalogu pv_profiles
+    # Load profiles
     profiles = load_profiles(sys.argv[2])
     
-    # Ustal liczbę iteracji na podstawie liczby godzin w plikach
+    # Determine the number of steps based on the number of hours in the profiles
     steps = len(next(iter(profiles.values())))
     
-    # Przygotuj dane godzinowe na podstawie załadowanych profili
+    # Prepare hourly data based on the loaded profiles
     hourly_data = []
     time_labels = []
     for hour in range(steps):
@@ -45,26 +58,28 @@ if __name__ == "__main__":
         time_labels.append(date)
         hourly_data.append({'hour': hour, 'consumption': total_consumption, 'production': total_production, 'date': date})
     
+    # Load grid costs
+    grid_costs = load_grid_costs(sys.argv[4])
+    
     p2p_base_price = 0.5
-    grid_price = 1.0
     min_price = 0.2
     token_mint_rate = 0.1
     token_burn_rate = 0.1
     
-    cooperative.simulate(len(hourly_data), p2p_base_price, grid_price, min_price, token_mint_rate, token_burn_rate, hourly_data)
+    cooperative.simulate(len(hourly_data), p2p_base_price, min_price, token_mint_rate, token_burn_rate, hourly_data, grid_costs)
     
-    # Zapisz dane wynikowe do plików CSV
+    # Save results to CSV files
     save_results_to_csv(cooperative, time_labels)
     
-    # Zapisz logi do pliku tekstowego
+    # Save logs to a text file
     now = datetime.now()
     formatted_date = now.strftime("%Y-%m-%d_%H:%M:%S")
     cooperative.save_logs(sys.argv[3] +'/simulation_' + formatted_date + '.log')
     
-    # Generowanie etykiet dla osi X
+    # Generate labels for the X-axis
     labels = time_labels
 
-    # Przypisanie zmodyfikowanej metody do obiektu cooperative
+    # Assign the modified method to the cooperative object
     cooperative.plot_results = plot_results.__get__(cooperative)
     
     cooperative.plot_results(len(hourly_data), labels)
