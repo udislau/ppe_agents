@@ -14,12 +14,12 @@ def load_profiles(directory):
 
 def load_storages(filepath):
     storages = []
-    df = pd.read_csv(filepath)
+    df = pd.read_csv(filepath, comment='#')
     for _, row in df.iterrows():
         storages.append({'id': row['id'], 'capacity': row['capacity']})
     return storages
 
-def save_results_to_csv(cooperative, time_labels):
+def save_results_to_csv(cooperative, time_labels, results_dir, formatted_date):
     data = {
         'Time': time_labels,
         'Total Consumption': cooperative.history_consumption,
@@ -37,9 +37,10 @@ def save_results_to_csv(cooperative, time_labels):
         data[f'Storage Level {storage_name}'] = storage_levels
     
     df = pd.DataFrame(data)
-    df.to_csv('simulation_results.csv', index=False)
+    df.to_csv(results_dir / f'simulation_results_{formatted_date}.csv', index=False)
+    
 
-def plot_results(self, steps, labels):
+def plot_results(self, steps, labels, results_dir, formatted_date):
     fig, ax = plt.subplots(6, 1, figsize=(15, 30))
     
     ax[0].plot(range(steps), self.history_consumption, label='Total Consumption')
@@ -51,50 +52,50 @@ def plot_results(self, steps, labels):
     ax[0].set_xticks(range(steps))
     ax[0].set_xticklabels(labels, rotation=90)
     
-    ax[1].plot(range(steps), self.history_token_balance, label='Token Balance')
-    ax[1].set_title('Token Balance Over Time')
+    ax[1].plot(range(steps), self.history_p2p_price, label='P2P Price')
+    ax[1].plot(range(steps), self.history_purchase_price, label='Purchase Grid Price')
+    ax[1].plot(range(steps), self.history_grid_price, label='Sale Grid Price')
+
+    ax[1].set_title('Energy Prices Over Time')
     ax[1].set_xlabel('Time')
-    ax[1].set_ylabel('Tokens')
+    ax[1].set_ylabel('Price (Tokens/kWh)')
     ax[1].legend()
     ax[1].set_xticks(range(steps))
     ax[1].set_xticklabels(labels, rotation=90)
     
-    ax[2].plot(range(steps), self.history_p2p_price, label='P2P Price')
-    ax[2].plot(range(steps), self.history_purchase_price, label='Purchase Grid Price')
-    ax[2].plot(range(steps), self.history_grid_price, label='Sale Grid Price')
-
-    ax[2].set_title('Energy Prices Over Time')
+    for storage_name, storage_levels in self.history_storage.items():
+        ax[2].plot(range(steps), storage_levels, label=f'Storage Level {storage_name}')
+    ax[2].set_title('Storage Levels Over Time')
     ax[2].set_xlabel('Time')
-    ax[2].set_ylabel('Price (Tokens/kWh)')
+    ax[2].set_ylabel('Energy (kWh)')
     ax[2].legend()
     ax[2].set_xticks(range(steps))
     ax[2].set_xticklabels(labels, rotation=90)
     
-    for storage_name, storage_levels in self.history_storage.items():
-        ax[3].plot(range(steps), storage_levels, label=f'Storage Level {storage_name}')
-    ax[3].set_title('Storage Levels Over Time')
+    ax[3].plot(range(steps), self.history_energy_deficit, label='Energy Deficit')
+    ax[3].set_title('Energy Deficit Over Time')
     ax[3].set_xlabel('Time')
     ax[3].set_ylabel('Energy (kWh)')
     ax[3].legend()
     ax[3].set_xticks(range(steps))
     ax[3].set_xticklabels(labels, rotation=90)
     
-    ax[4].plot(range(steps), self.history_energy_deficit, label='Energy Deficit')
-    ax[4].set_title('Energy Deficit Over Time')
+    ax[4].plot(range(steps), self.history_energy_surplus, label='Energy Surplus')
+    ax[4].set_title('Energy Surplus Over Time')
     ax[4].set_xlabel('Time')
     ax[4].set_ylabel('Energy (kWh)')
     ax[4].legend()
     ax[4].set_xticks(range(steps))
     ax[4].set_xticklabels(labels, rotation=90)
-    
-    ax[5].plot(range(steps), self.history_energy_surplus, label='Energy Surplus')
-    ax[5].set_title('Energy Surplus Over Time')
+
+    ax[5].plot(range(steps), self.history_token_balance, label='Token Balance')
+    ax[5].set_title('Token Balance Over Time')
     ax[5].set_xlabel('Time')
-    ax[5].set_ylabel('Energy (kWh)')
+    ax[5].set_ylabel('Tokens')
     ax[5].legend()
     ax[5].set_xticks(range(steps))
     ax[5].set_xticklabels(labels, rotation=90)
     
     plt.tight_layout()
-    plt.savefig('results.png')  # Save the plot to a file
-    plt.show()
+    plt.savefig(results_dir / f'simulation_plots_{formatted_date}.png')  # Save the plot to a file
+    

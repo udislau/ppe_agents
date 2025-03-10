@@ -3,6 +3,8 @@ from src.utils.helper_functions import plot_results, save_results_to_csv, load_p
 import sys
 import csv
 from datetime import datetime
+from pathlib import Path
+
 
 def load_grid_costs(filepath):
     grid_costs = []
@@ -68,13 +70,19 @@ if __name__ == "__main__":
     
     cooperative.simulate(len(hourly_data), p2p_base_price, min_price, token_mint_rate, token_burn_rate, hourly_data, grid_costs)
     
-    # Save results to CSV files
-    save_results_to_csv(cooperative, time_labels)
-    
-    # Save logs to a text file
+    results_dir = Path("results")
+    results_dir.mkdir(parents=True, exist_ok=True)
     now = datetime.now()
     formatted_date = now.strftime("%Y-%m-%d_%H:%M:%S")
-    cooperative.save_logs(sys.argv[3] +'/simulation_' + formatted_date + '.log')
+
+    # Save results to CSV files
+    save_results_to_csv(cooperative, time_labels, results_dir, formatted_date)
+    
+    # Save logs to a text file
+    log_dir = Path(sys.argv[3])
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    cooperative.save_logs(str(log_dir / f'simulation_{formatted_date}.log'))
     
     # Generate labels for the X-axis
     labels = time_labels
@@ -82,4 +90,4 @@ if __name__ == "__main__":
     # Assign the modified method to the cooperative object
     cooperative.plot_results = plot_results.__get__(cooperative)
     
-    cooperative.plot_results(len(hourly_data), labels)
+    cooperative.plot_results(len(hourly_data), labels, results_dir, formatted_date)
