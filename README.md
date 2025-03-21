@@ -1,13 +1,13 @@
-# fetchai-agent-simulation/fetchai-agent-simulation/README.md
+# energy-ai-agents-simulation/README.md
 
-# Fetch.ai Agent Simulation
+# Energy AI Agents Simulation
 
 This project implements agent-based modeling techniques using local Fetch.ai agents to simulate complex interactions between community members. The simulation aims to explore how individual behaviors and interactions can impact community dynamics and resource management.
 
 ## Project Structure
 
 ```
-fetchai-agent-simulation
+energy-ai-agents-simulation
 ├── src
 │   ├── agents
 │   │   ├── __init__.py
@@ -32,7 +32,7 @@ fetchai-agent-simulation
 1. Clone the repository:
    ```
    git clone <repository-url>
-   cd fetchai-agent-simulation
+   cd energy-ai-agents-simulation
    ```
 
 2. create or load venv in python
