@@ -2,3 +2,5 @@ fetchai==0.1.30
 numpy
 matplotlib
 random2
+pandas
+pydantic>=2.4.0

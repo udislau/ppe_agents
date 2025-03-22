@@ -30,17 +30,21 @@ energy-ai-agents-simulation
 ## Setup Instructions
 
 1. Clone the repository:
+
    ```
    git clone <repository-url>
    cd energy-ai-agents-simulation
    ```
 
 2. create or load venv in python
+
    ```
    source venv/bin/activate
 
+   ```
 
 3. Install the required dependencies:
+
    ```
    pip install -r requirements.txt
    ```
@@ -53,6 +57,7 @@ energy-ai-agents-simulation
 ## Usage
 
 To run the simulation, execute the following command:
+
 ```
 python3 src/simulation/energy_community_simulation.py storages.csv pv_profiles_2_days logs grid_costs
 ```

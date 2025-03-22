@@ -1,0 +1,10 @@
+{
+  "storage_1": {
+    "capacity": 10.0,
+    "current_charge": 5.0
+  },
+  "storage_2": {
+    "capacity": 15.0,
+    "current_charge": 3.0
+  }
+}

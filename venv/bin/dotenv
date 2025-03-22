@@ -1,4 +1,4 @@
-#!/home/greg/prog/energy-agents/fetchai-agent-simulation/venv/bin/python3
+#!/Users/stanislawstankiewicz/projects/whatever/energy-ai-agents-simulation/venv/bin/python3.13
 # -*- coding: utf-8 -*-
 import re
 import sys
