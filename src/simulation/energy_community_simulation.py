@@ -73,7 +73,7 @@ if __name__ == "__main__":
     results_dir = Path("results")
     results_dir.mkdir(parents=True, exist_ok=True)
     now = datetime.now()
-    formatted_date = now.strftime("%Y-%m-%d_%H:%M:%S")
+    formatted_date = now.strftime("%Y-%m-%d_%H-%M-%S")
 
     # Save results to CSV files
     save_results_to_csv(cooperative, time_labels, results_dir, formatted_date)
