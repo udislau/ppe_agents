@@ -18,8 +18,8 @@ def load_grid_costs(filepath):
             })
     return grid_costs
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     if len(sys.argv) < 1:
         print("No required parameter: storage file path")
         sys.exit(1)

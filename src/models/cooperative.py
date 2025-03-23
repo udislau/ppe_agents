@@ -75,12 +75,6 @@ class Cooperative:
                     break
             if net_energy > 0:
                 energy_surplus = net_energy
-                # for storage in self.storages:
-                #    if storage.current_charge >= net_energy:
-                #        storage.discharge(net_energy)
-                #        minted_tokens = net_energy * token_mint_rate
-                #        self.community_token_balance += minted_tokens
-                #        break
                 # Sell surplus energy to the grid
                 energy_sold_to_grid = energy_surplus
                 tokens_gained_from_grid = energy_sold_to_grid * sale_price

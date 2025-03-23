@@ -19,14 +19,14 @@ source venv/bin/activate
 
 # Install required dependencies
 echo "Checking and installing dependencies..."
-pip install pandas anthropic matplotlib claudetools
+pip install pandas anthropic matplotlib claudetools python-dotenv
 
 # Set PYTHONPATH
 export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 # Default paths
 STORAGE_PATH="config/storages.json"
-PROFILES_DIR="pv_profiles"
+PROFILES_DIR="pv_profiles_2_days"
 LOG_DIR="logs"
 GRID_COSTS_PATH="config/grid_costs.csv"
 

@@ -64,6 +64,11 @@ def run_agent_simulation(
     # Load profiles
     profiles = load_profiles(profiles_dir)
 
+    p2p_base_price = 0.5
+    min_price = 0.2
+    token_mint_rate = 0.1
+    token_burn_rate = 0.1
+
     # Create PPE agents (one per profile)
     ppe_agents = {}
     for ppe_id, profile_data in profiles.items():
@@ -103,6 +108,19 @@ def run_agent_simulation(
         "grid_purchase": [],
         "grid_sale": [],
         "storage_level": [],
+        "token_balance": []
+        # self.history_consumption.append(consumption)
+        # self.history_production.append(production)
+        # self.history_token_balance.append(self.community_token_balance)
+        # self.history_p2p_price.append(p2p_base_price)
+        # self.history_grid_price.append(sale_price)
+        # self.history_purchase_price.append(grid_price)
+        # for storage in self.storages:
+        #     self.history_storage[storage.name].append(storage.current_charge)
+        # self.history_energy_deficit.append(energy_deficit)
+        # self.history_energy_surplus.append(energy_surplus)
+        # self.history_energy_sold_to_grid.append(energy_sold_to_grid)
+        # self.history_tokens_gained_from_grid.append(tokens_gained_from_grid)
     }
 
     # Extract the first profile to get time information
@@ -175,10 +193,14 @@ def run_agent_simulation(
         # Process the decision to update energy flows
         net_energy = total_production - total_consumption
         grid_purchase = 0
+        stat_grid_purchase = 0
         grid_sale = 0
+        stat_grid_sale = 0
+        
 
         if decision["action"] == "BUY":
             grid_purchase = decision["amount"]
+            stat_grid_purchase = decision["amount"]
             # Add energy to storage
             for storage in cooperative.storages:
                 # Calculate how much we can add to this storage
@@ -198,6 +220,7 @@ def run_agent_simulation(
 
             if available_from_storage >= decision["amount"]:
                 grid_sale = decision["amount"]
+                stat_grid_sale = decision["amount"]
 
                 # Take energy from storage
                 remaining_to_take = grid_sale
@@ -210,7 +233,7 @@ def run_agent_simulation(
                         break
             else:
                 grid_sale = available_from_storage
-
+                stat_grid_sale = available_from_storage
                 # Take all available energy from storage
                 for storage in cooperative.storages:
                     storage.current_charge = 0
@@ -237,14 +260,10 @@ def run_agent_simulation(
             energy_needed = -net_energy
 
             for storage in cooperative.storages:
-                to_take = min(storage.current_charge, energy_needed)
+                energy_needed -= storage.discharge(energy_needed)
 
-                if to_take > 0:
-                    storage.current_charge -= to_take
-                    energy_needed -= to_take
-
-                    if energy_needed <= 0:
-                        break
+                if energy_needed <= 0:
+                    break
 
             # If we still need energy, buy from the grid
             if energy_needed > 0:
@@ -258,12 +277,14 @@ def run_agent_simulation(
         simulation_results["total_production"].append(total_production)
         simulation_results["total_consumption"].append(total_consumption)
         simulation_results["net_energy"].append(total_production - total_consumption)
-        simulation_results["grid_purchase"].append(grid_purchase)
-        simulation_results["grid_sale"].append(grid_sale)
+        simulation_results["grid_purchase"].append(stat_grid_purchase)
+        simulation_results["grid_sale"].append(stat_grid_sale)
         simulation_results["storage_level"].append(total_storage)
+        simulation_results["token_balance"].append(1)
+
 
         print(
-            f"  Grid Purchase: {grid_purchase:.2f} kWh, Grid Sale: {grid_sale:.2f} kWh"
+            f"  Grid Purchase: {stat_grid_purchase:.2f} kWh, Grid Sale: {stat_grid_sale:.2f} kWh"
         )
         print(f"  Total Storage Level: {total_storage:.2f} kWh")
 
